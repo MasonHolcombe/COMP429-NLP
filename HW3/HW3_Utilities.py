@@ -1,7 +1,24 @@
+import requests
 import string
 from collections import defaultdict
 import numpy as np
 
+def load_movie_polarity_reviews():
+    master_url = "https://raw.githubusercontent.com/dennybritz/cnn-text-classification-tf/master/data/rt-polaritydata/rt-polarity."
+    pos_url = master_url + "pos"
+    neg_url = master_url + "neg"
+
+    resp_pos, resp_neg = requests.get(pos_url), requests.get(neg_url)
+
+    text_pos = resp_pos.text.strip().split("\n")
+    text_neg = resp_neg.text.strip().split("\n")
+
+    pos_dict = {k: 1 for k in text_pos}
+    neg_dict = {k: 0 for k in text_neg}
+
+    all_reviews = pos_dict | neg_dict
+
+    return all_reviews
 
 def tokenize(text):
     tokens = [x for x in text.split() if x not in string.punctuation and len(x) > 1]
