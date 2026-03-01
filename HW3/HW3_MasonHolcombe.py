@@ -6,7 +6,7 @@ import pandas as pd
 from sklearn.linear_model import LogisticRegression
 from sklearn.feature_extraction.text import TfidfVectorizer
 
-from HW3_Utilities import load_movie_polarity_reviews, tokenize, create_vocab_dict, create_review_vector, dataset_vectorizer    
+from HW3_Utilities import load_movie_polarity_reviews, tokenize_sentence, create_vocab_dict, create_review_vector, dataset_vectorizer    
 
 def HW3_main():
     np.random.seed(11022001)
@@ -64,9 +64,9 @@ def HW3_main():
     print(f"STEP 4 | Best Model Accuracy on Test Data (shape={test_X.shape}): {test_accuracy:.2%}")
 
     # 5)
-    clean_train_reviews = [" ".join(tokenize(review)) for review in train_reviews.keys()]
-    clean_dev_reviews = [" ".join(tokenize(review)) for review in dev_reviews.keys()]
-    clean_test_reviews = [" ".join(tokenize(review)) for review in test_reviews.keys()]
+    clean_train_reviews = [" ".join(tokenize_sentence(review)) for review in train_reviews.keys()]
+    clean_dev_reviews = [" ".join(tokenize_sentence(review)) for review in dev_reviews.keys()]
+    clean_test_reviews = [" ".join(tokenize_sentence(review)) for review in test_reviews.keys()]
 
     tfidf_vectorizer = TfidfVectorizer()
     train_X_tfidf = tfidf_vectorizer.fit_transform(clean_train_reviews)
