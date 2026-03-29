@@ -2,6 +2,9 @@ import requests
 import string
 from collections import defaultdict
 import numpy as np
+from sklearn.metrics.pairwise import cosine_similarity
+
+
 
 def load_movie_polarity_reviews():
     master_url = "https://raw.githubusercontent.com/dennybritz/cnn-text-classification-tf/master/data/rt-polaritydata/rt-polarity."
@@ -20,36 +23,23 @@ def load_movie_polarity_reviews():
 
     return all_reviews
 
-def tokenize_sentence(text):
-    tokens = [x for x in text.split() if x not in string.punctuation and len(x) > 1]
-    for punct in string.punctuation:
-        tokens = [token.lower().replace(punct, '') for token in tokens]
-    return tokens
+def pretrained_model_similarity(pretrained_model, word1, word2):
+    wv1 = pretrained_model[word1].reshape(1, -1)
+    wv2 = pretrained_model[word2].reshape(1, -1)
 
-def create_vocab_dict(reviews_dict):
-    vocab = defaultdict(int)
-    for r in reviews_dict.keys():
-        tokens = tokenize_sentence(r)
-        for t in tokens:
-            vocab[t] += 1
-    return dict(sorted(vocab.items(), key=lambda item: item[1], reverse=True))
+    sim_score = cosine_similarity(wv1, wv2).item()
+    return sim_score
 
-def create_review_vector(review, vocab_dict):
-    vector = np.zeros(len(vocab_dict) + 1)
-    tokens = tokenize_sentence(review)
-    for i, word in enumerate(vocab_dict.keys()):
-        if word in tokens:
-            vector[i] = 1
-
-    oov_tokens = list(set([token for token in tokens if token not in vocab_dict]))
-    if oov_tokens:
-        vector[-1] = len(oov_tokens)
-
-    return vector
-
-def dataset_vectorizer(reviews, vocab_dict):
-    X, y = [], []
-    for review, label in reviews.items():
-        X.append(create_review_vector(review, vocab_dict))
-        y.append(label)
-    return np.array(X), np.array(y)
+def sentence_to_avg(sentence, model, embedding_dim):
+    tokens = sentence.lower().split()
+    
+    vectors = []
+    
+    for word in tokens:
+        if word in model:
+            vectors.append(model[word])
+    
+    if len(vectors) == 0:
+        return np.zeros(embedding_dim)  # all OOV case
+    
+    return np.mean(vectors, axis=0)
